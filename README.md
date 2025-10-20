@@ -85,9 +85,8 @@ Follow these instructions to get a local copy up and running.
 Once the dependencies are installed, run the application with the following command:
 
 ```sh
-python main.py
+python Py2Exe.py
 ```
-*(Replace `main.py` with the actual name of the main script if it differs.)*
 
 ## Contributing
 
