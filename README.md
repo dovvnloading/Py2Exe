@@ -1,3 +1,6 @@
+<img width="1024" height="492" alt="bnr_1" src="https://github.com/user-attachments/assets/7820a793-70c4-4632-ab56-b8f2ea8e4ce1" />
+
+
 # Py2Exe
 
 A modern, professional Graphical User Interface for the powerful PyInstaller toolchain.
