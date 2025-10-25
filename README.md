@@ -1,6 +1,5 @@
 <img width="1024" height="492" alt="bnr_1" src="https://github.com/user-attachments/assets/7820a793-70c4-4632-ab56-b8f2ea8e4ce1" />
 
-
 # Py2Exe
 
 A modern, professional Graphical User Interface for the powerful PyInstaller toolchain.
@@ -10,11 +9,12 @@ A modern, professional Graphical User Interface for the powerful PyInstaller too
 [![UI Framework](https://img.shields.io/badge/UI-PySide6-2796EC)](https://www.qt.io/qt-for-python)
 [![Built with](https://img.shields.io/badge/Built%20with-PyInstaller-informational)](https://pyinstaller.org/)
 
-Py2Exe provides an intuitive and powerful front-end for PyInstaller, allowing developers to package their Python applications into standalone executables without memorizing command-line arguments. It exposes both basic and advanced PyInstaller features in a clean, themeable, and easy-to-navigate interface.
+Py2Exe provides an intuitive and powerful front-end for PyInstaller, allowing developers to package their Python applications into standalone executables without memorizing command-line arguments. It exposes basic, advanced, and asset-related PyInstaller features in a clean, themeable, and easy-to-navigate interface.
 
 ## Features
 
-- **Intuitive UI**: A clean, tabbed interface separates basic, advanced, and package-related options.
+- **Intuitive UI**: A clean, tabbed interface separates basic, advanced, package, and asset options.
+- **Full Asset Management**: A dedicated "Assets" tab allows for easy inclusion of data files and folders (e.g., images, configs, fonts). Specify the source path and the destination directory within your bundled app.
 - **Light & Dark Themes**: Switch between themes for comfortable viewing in any environment. The application can also theme the window's title bar on modern Windows systems.
 - **Real-time Build Log**: A side-by-side log panel provides immediate feedback on the build process.
 - **Syntax Highlighting**: Critical log messages like `[ERROR]`, `[SUCCESS]`, and `[WARNING]` are color-coded for quick identification.
@@ -26,7 +26,7 @@ Py2Exe provides an intuitive and powerful front-end for PyInstaller, allowing de
   - Pre-build cleaning and binary stripping
   - UPX compression control
   - Inclusion of hidden imports and data collection
-- **Robust & Stable**: The UI is designed with a fixed window and protected panels to prevent layout issues and ensure a consistent user experience.
+- **Robust & Stable**: The UI is designed with a fixed window and a non-collapsible settings panel to prevent layout issues and ensure a consistent user experience.
 
 ## Demonstration
 
@@ -37,15 +37,13 @@ The application provides a seamless workflow from configuration to final build.
 <details>
 <summary>View Application Screenshots</summary>
   
-| Basic Options | Advanced Options |
+| | |
 | :---: | :---: |
-| <img width="470" alt="Basic Options Tab" src="https://github.com/user-attachments/assets/1a12d6a1-fb95-4ffe-b4ce-220a47f5b6d3" /> | <img width="470" alt="Advanced Options Tab" src="https://github.com/user-attachments/assets/fe03c911-2126-473f-80fd-f740900ae196" /> |
-
-| Package Management | Dark Mode |
-| :---: | :---: |
-| <img width="470" alt="Package Management Tab" src="https://github.com/user-attachments/assets/16c71df5-be81-47d3-b141-d83740d76f75" /> | <img width="470" alt="Dark Mode" src="https://github.com/user-attachments/assets/e9b7a90c-9e9e-4da7-9f87-dcf7b9102d77" /> |
+| <img width="470" alt="Py2Exe Basic Options Tab" src="https://github.com/user-attachments/assets/16744af5-4586-447a-9b59-d066dfb5b14f" /> | <img width="470" alt="Py2Exe Advanced Options Tab" src="https://github.com/user-attachments/assets/db56db9e-eb60-4887-bbec-de1350e88c18" /> |
+| <img width="470" alt="Py2Exe Package Management Tab" src="https://github.com/user-attachments/assets/7704f714-d0c2-4805-8d23-8cdfc94905b4" /> | <img width="470" alt="Py2Exe Assets Tab" src="https://github.com/user-attachments/assets/a7a38fc7-2ee6-4eba-a1be-390215a61329" /> |
 
 </details>
+
 
 ## Getting Started
 
