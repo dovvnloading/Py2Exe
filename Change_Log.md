@@ -1,4 +1,4 @@
-## Changelog: Py2Exe GUI - [Unreleased] 10/24/2025 - 10:23pm EC/ATz
+## Changelog: Py2Exe GUI - [v1.1.0] 10/24/2025 - 10:23pm EC/ATz
 
 This update introduces a major new feature for asset management and a key user interface improvement for a more robust and predictable layout.
 
