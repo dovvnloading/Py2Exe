@@ -1,12 +1,14 @@
-﻿import sys
+import sys
 import re
+import os
 import subprocess
 from pathlib import Path
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QCheckBox, QFileDialog,
     QTextEdit, QMessageBox, QTabWidget, QScrollArea, QFrame,
-    QFormLayout, QGroupBox, QSplitter
+    QFormLayout, QGroupBox, QSplitter, QTableWidget, QTableWidgetItem,
+    QHeaderView, QAbstractItemView
 )
 from PySide6.QtCore import Qt, Signal, QObject, QThread, QSize, QRegularExpression
 from PySide6.QtGui import QFont, QColor, QPalette, QIcon, QPixmap, QPainter, QSyntaxHighlighter, QTextCharFormat
@@ -177,6 +179,12 @@ class BuildWorker(QObject):
                     cmd.extend(["--exclude-module", mod])
                 self.output_signal.emit(f"[CONFIG] Excluded modules: {', '.join(self.options['exclude_modules'])}\n")
 
+            if self.options.get('add_data'):
+                data_separator = os.pathsep
+                for source, dest in self.options['add_data']:
+                    cmd.extend(["--add-data", f"{source}{data_separator}{dest}"])
+                self.output_signal.emit(f"[CONFIG] Added data files: {len(self.options['add_data'])}\n")
+
             cmd.append(self.script_path)
             self.output_signal.emit(f"[CONFIG] Script: {self.script_path}\n")
             self.output_signal.emit("\n" + "="*80 + "\n")
@@ -314,7 +322,7 @@ class ThemeManager:
             QLabel {{
                 color: {colors['text']};
             }}
-            QLineEdit, QTextEdit {{
+            QLineEdit, QTextEdit, QTableWidget {{
                 background-color: {colors['bg_sunken']};
                 color: {colors['text']};
                 border: 1px solid {colors['border']};
@@ -324,7 +332,7 @@ class ThemeManager:
             QTextEdit#logDisplay {{
                  color: {colors['text_dim']};
             }}
-            QLineEdit:focus, QTextEdit:focus {{
+            QLineEdit:focus, QTextEdit:focus, QTableWidget:focus {{
                 border: 1px solid {colors['primary']};
             }}
             QPushButton {{
@@ -400,6 +408,11 @@ class ThemeManager:
             }}
             QSplitter::handle:horizontal {{
                 width: 3px;
+            }}
+            QHeaderView::section {{
+                background-color: {colors['bg_raised']};
+                border: 1px solid {colors['border']};
+                padding: 4px;
             }}
         """
 
@@ -586,6 +599,86 @@ class PackagesTab(QWidget):
             'exclude_modules': exclude_modules,
         }
 
+class AssetsTab(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
+
+        assets_group = QGroupBox("Data Files and Assets")
+        assets_layout = QVBoxLayout(assets_group)
+
+        button_layout = QHBoxLayout()
+        self.add_file_button = QPushButton("Add File(s)...")
+        self.add_folder_button = QPushButton("Add Folder...")
+        self.remove_button = QPushButton("Remove Selected")
+        
+        button_layout.addWidget(self.add_file_button)
+        button_layout.addWidget(self.add_folder_button)
+        button_layout.addStretch()
+        button_layout.addWidget(self.remove_button)
+
+        self.assets_table = QTableWidget()
+        self.assets_table.setColumnCount(2)
+        self.assets_table.setHorizontalHeaderLabels(["Source Path", "Destination in App (e.g., '.', 'data/')"])
+        self.assets_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.assets_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
+        self.assets_table.setColumnWidth(1, 250)
+        self.assets_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+
+        self.add_file_button.clicked.connect(self.add_files)
+        self.add_folder_button.clicked.connect(self.add_folder)
+        self.remove_button.clicked.connect(self.remove_selected)
+
+        assets_layout.addLayout(button_layout)
+        assets_layout.addWidget(self.assets_table)
+        
+        layout.addWidget(assets_group)
+        layout.addStretch()
+
+    def add_files(self):
+        files, _ = QFileDialog.getOpenFileNames(self, "Select Asset Files to Add", "", "All Files (*)")
+        if files:
+            for file_path in files:
+                self._add_row(file_path, ".")
+
+    def add_folder(self):
+        folder_path = QFileDialog.getExistingDirectory(self, "Select Asset Folder to Add")
+        if folder_path:
+            dest_name = Path(folder_path).name
+            self._add_row(folder_path, dest_name)
+
+    def _add_row(self, source_path, dest_path):
+        row_position = self.assets_table.rowCount()
+        self.assets_table.insertRow(row_position)
+        
+        source_item = QTableWidgetItem(source_path)
+        source_item.setFlags(source_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+
+        dest_item = QTableWidgetItem(dest_path)
+
+        self.assets_table.setItem(row_position, 0, source_item)
+        self.assets_table.setItem(row_position, 1, dest_item)
+
+    def remove_selected(self):
+        selected_rows = sorted(list(set(index.row() for index in self.assets_table.selectionModel().selectedIndexes())), reverse=True)
+        for row in selected_rows:
+            self.assets_table.removeRow(row)
+
+    def get_options(self):
+        assets = []
+        for row in range(self.assets_table.rowCount()):
+            source_item = self.assets_table.item(row, 0)
+            dest_item = self.assets_table.item(row, 1)
+            if source_item and dest_item:
+                source = source_item.text()
+                dest = dest_item.text().strip()
+                if source and dest:
+                    assets.append((source, dest))
+        return {'add_data': assets}
+
+
 # =================================================================================
 # Class: PyInstallerGUI (Main Application Window)
 # =================================================================================
@@ -625,20 +718,23 @@ class PyInstallerGUI(QMainWindow):
 
         # Tabs
         self.tabs = QTabWidget()
-        self.tabs.setMinimumWidth(500)
+        self.tabs.setMinimumWidth(530)
         self.basic_tab = BasicOptionsTab()
         self.advanced_tab = AdvancedOptionsTab()
         self.packages_tab = PackagesTab()
+        self.assets_tab = AssetsTab()
         self.tabs.addTab(self.basic_tab, "Basic Options")
         self.tabs.addTab(self.advanced_tab, "Advanced Options")
         self.tabs.addTab(self.packages_tab, "Package Management")
+        self.tabs.addTab(self.assets_tab, "Assets")
         
         # Log Panel
         log_panel = self._create_log_panel()
 
         splitter.addWidget(self.tabs)
         splitter.addWidget(log_panel)
-        splitter.setSizes([500, 460])
+        splitter.setSizes([500, 420])
+        splitter.setCollapsible(0, False)
 
     def _create_header(self):
         header_widget = QFrame()
@@ -770,6 +866,7 @@ class PyInstallerGUI(QMainWindow):
         options.update(basic_opts)
         options.update(self.advanced_tab.get_options())
         options.update(self.packages_tab.get_options())
+        options.update(self.assets_tab.get_options())
 
         self.build_worker = BuildWorker(script_path, options)
         self.build_worker.output_signal.connect(self.append_log)
